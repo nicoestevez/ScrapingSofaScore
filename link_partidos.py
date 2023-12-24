@@ -13,7 +13,7 @@ options = Options()
 # options.add_experimental_option("detach", True)
 # options.add_argument("--headless")
 
-service = Service(executable_path='/usr/bin/chromedriver')
+service = Service(ChromeDriverManager().install())
 
 driver = webdriver.Chrome(service=service, options=options)
 
@@ -23,7 +23,7 @@ driver.get(url)
 
 sleep(2)
 try:
-    matches = driver.find_element(By.XPATH, '//h2[@data-tabid="matches"]')
+    matches = driver.find_element(By.CSS_SELECTOR, 'h2.sc-jXbUNg.gaxyfA.primary.full-width[data-tabid="matches"]')
     matches.click()
 except Exception as e:
     print("No se encontraron los partidos")
@@ -31,7 +31,7 @@ except Exception as e:
 
 sleep(1)
 try:
-    per_rounds = driver.find_element(By.XPATH, '//div[@data-tabid="2"][@d="inline-block"][@class="sc-hLBbgP bJbFuC sc-pyfCe gjBXhT secondary "]')
+    per_rounds = driver.find_element(By.CSS_SELECTOR, 'div.sc-fqkvVR.LYUxR.sc-jXbUNg.edbelf[data-tabid="2"]')
     per_rounds.click()
 except Exception as e:
     print("No se encontraron las rondas")
@@ -39,17 +39,19 @@ except Exception as e:
 sleep(1)
 
 try:
-    anterior = driver.find_element(By.CLASS_NAME, 'gvEXzS')
+    anterior = driver.find_element(By.CSS_SELECTOR, 'button.sc-aXZVg.dbpbvb')
 
     # Open links.txt file for writing
-    with open('links.txt', 'w') as file:
-        for i in range(18):
-            sleep(1)
-            anterior.click()
-            sleep(1)
+    with open('links.txt', 'a') as file:
+        for i in range(6):
+            
+            if i == 0:
+                for i in range(25):
+                    sleep(1)
+                    anterior.click()
 
             try:
-                contenedor = driver.find_element(By.CSS_SELECTOR, "div.sc-hLBbgP.sYIUR > div.list-wrapper > div.sc-hLBbgP.hBOvkB")
+                contenedor = driver.find_element(By.CSS_SELECTOR, "div.sc-fqkvVR.fChHZS")
 
                 a_elements = contenedor.find_elements(By.TAG_NAME, "a")
                 for a_element in a_elements:
@@ -61,6 +63,10 @@ try:
                     if link != url:
                         # Write link to file
                         file.write(link + '\n')
+
+                sleep(1)
+                anterior.click()
+                sleep(1)
 
             except Exception as e:
                 print("No se encontraron los elementos")
