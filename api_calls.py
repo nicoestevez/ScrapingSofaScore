@@ -14,7 +14,7 @@ with open('ids.txt', 'r') as file:
     for row in file:
         ids.append(row.strip())
 
-headers_csv = ["home_team", "away_team", "home_score", "away_score", "expected_goals_home", 
+headers_csv = ["team_home", "team_away", "score_home", "score_away", "expected_goals_home", 
                "expected_goals_away", "posession_home", "posession_away", "total_shots_home", 
                "total_shots_away", "shots_on_target_home", "shots_on_target_away", 
                "shots_off_target_home", "shots_off_target_away", "blocked_shots_home", 
@@ -80,29 +80,57 @@ with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csv
             blocked_shots_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][3]['homeValue']
             blocked_shots_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][3]['awayValue']
 
-            corner_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['homeValue']
-            corner_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['awayValue']
+            if len(statistics['statistics'][0]['groups'][3]['statisticsItems']) == 8:
 
-            offsides_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['homeValue']
-            offsides_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['awayValue']
+                corner_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['homeValue']
+                corner_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['awayValue']
 
-            fouls_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['homeValue']
-            fouls_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['awayValue']
+                offsides_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['homeValue']
+                offsides_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['awayValue']
 
-            yellow_cards_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][3]['homeValue']
-            yellow_cards_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][3]['awayValue']
+                fouls_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['homeValue']
+                fouls_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['awayValue']
 
-            red_cards_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][4]['homeValue']
-            red_cards_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][4]['awayValue']
+                yellow_cards_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][3]['homeValue']
+                yellow_cards_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][3]['awayValue']
 
-            free_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][5]['homeValue']
-            free_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][5]['awayValue']
+                red_cards_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][4]['homeValue']
+                red_cards_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][4]['awayValue']
 
-            throw_ins_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][6]['homeValue']
-            throw_ins_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][6]['awayValue']
+                free_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][5]['homeValue']
+                free_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][5]['awayValue']
 
-            goal_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][7]['homeValue']
-            goal_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][7]['awayValue']
+                throw_ins_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][6]['homeValue']
+                throw_ins_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][6]['awayValue']
+
+                goal_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][7]['homeValue']
+                goal_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][7]['awayValue']
+            
+            elif len(statistics['statistics'][0]['groups'][3]['statisticsItems']) == 7:
+
+                corner_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['homeValue']
+                corner_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['awayValue']
+
+                offsides_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['homeValue']
+                offsides_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['awayValue']
+
+                fouls_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['homeValue']
+                fouls_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['awayValue']
+
+                yellow_cards_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][3]['homeValue']
+                yellow_cards_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][3]['awayValue']
+
+                red_cards_home = 0
+                red_cards_away = 0
+
+                free_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][4]['homeValue']
+                free_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][4]['awayValue']
+
+                throw_ins_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][5]['homeValue']
+                throw_ins_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][5]['awayValue']
+
+                goal_kicks_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][6]['homeValue']
+                goal_kicks_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][6]['awayValue']
 
             shots_inside_box_home = statistics['statistics'][0]['groups'][4]['statisticsItems'][0]['homeValue']
             shots_inside_box_away = statistics['statistics'][0]['groups'][4]['statisticsItems'][0]['awayValue']
