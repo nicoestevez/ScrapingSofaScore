@@ -1,5 +1,8 @@
 # APIs
 
+https://api.sofascore.com/api/v1/player/{player-id}/unique-tournament/11653/season/48017/statistics/overall
+https://api.sofascore.com/api/v1/team/{team-id}/players
+
 ## all
 https://api.sofascore.com/api/v1/event/10961781/odds/1/all
 
