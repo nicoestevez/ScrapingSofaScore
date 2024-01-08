@@ -9,6 +9,8 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 
+CANTIDAD_FECHAS = 38
+
 options = Options()
 # options.add_experimental_option("detach", True)
 # options.add_argument("--headless")
@@ -17,7 +19,7 @@ service = Service(ChromeDriverManager().install())
 
 driver = webdriver.Chrome(service=service, options=options)
 
-url = "https://www.sofascore.com/tournament/football/chile/primera-division/11653"
+url = "https://www.sofascore.com/tournament/football/chile/primera-division/11653#id:2577"
 
 driver.get(url)
 
@@ -43,24 +45,25 @@ try:
 
     # Open links.txt file for writing
     with open('links.txt', 'a') as file:
-        for i in range(6):
+        for i in range(CANTIDAD_FECHAS):
             
-            if i == 0:
-                for i in range(25):
-                    sleep(1)
-                    anterior.click()
+            # if i == 0:
+            #     for i in range(5):
+            #         sleep(1)
+            #         anterior.click()
 
             try:
                 contenedor = driver.find_element(By.CSS_SELECTOR, "div.sc-fqkvVR.fChHZS")
 
                 a_elements = contenedor.find_elements(By.TAG_NAME, "a")
+                print(f"Fecha {CANTIDAD_FECHAS - i}: ", len(a_elements))
                 for a_element in a_elements:
 
                     # Visita el enlace
                     link = a_element.get_attribute('href')
-                    print(link)
+                    # print(link)
 
-                    if link != url:
+                    if link != "https://www.sofascore.com/tournament/football/chile/primera-division/11653":
                         # Write link to file
                         file.write(link + '\n')
 

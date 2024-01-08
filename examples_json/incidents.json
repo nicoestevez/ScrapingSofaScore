@@ -1,0 +1,412 @@
+{
+    "incidents": [
+        {
+            "text": "FT",
+            "homeScore": 4,
+            "awayScore": 0,
+            "isLive": false,
+            "time": 90,
+            "addedTime": 999,
+            "reversedPeriodTime": 1,
+            "incidentType": "period"
+        },
+        {
+            "player": {
+                "name": "Juan C\u00f3rdova",
+                "slug": "juan-cordova",
+                "shortName": "J. C\u00f3rdova",
+                "position": "D",
+                "userCount": 12,
+                "id": 924498
+            },
+            "playerName": "Juan C\u00f3rdova",
+            "reason": "Foul",
+            "rescinded": false,
+            "id": 120161674,
+            "time": 90,
+            "addedTime": 1,
+            "isHome": false,
+            "incidentClass": "yellow",
+            "reversedPeriodTime": 1,
+            "incidentType": "card"
+        },
+        {
+            "length": 2,
+            "time": 90,
+            "addedTime": 0,
+            "reversedPeriodTime": 1,
+            "incidentType": "injuryTime"
+        },
+        {
+            "player": {
+                "name": "Joaquin Gonzalez",
+                "firstName": "Joaquin Gonzalez",
+                "lastName": "",
+                "slug": "joaquin-gonzalez",
+                "shortName": "J. Gonzalez",
+                "position": "D",
+                "userCount": 3,
+                "id": 1111465
+            },
+            "playerName": "Joaquin Gonzalez",
+            "reason": "Foul",
+            "rescinded": false,
+            "id": 120161672,
+            "time": 89,
+            "isHome": true,
+            "incidentClass": "yellow",
+            "reversedPeriodTime": 2,
+            "incidentType": "card"
+        },
+        {
+            "playerIn": {
+                "name": "Yerson Opazo",
+                "slug": "yerson-opazo",
+                "shortName": "Y. Opazo",
+                "position": "D",
+                "userCount": 2,
+                "id": 47715
+            },
+            "playerOut": {
+                "name": "Juan Pablo G\u00f3mez",
+                "slug": "juan-pablo-gomez",
+                "shortName": "J. P. G\u00f3mez",
+                "position": "D",
+                "userCount": 25,
+                "id": 162409
+            },
+            "id": 120809789,
+            "time": 86,
+            "isHome": true,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 5,
+            "incidentType": "substitution"
+        },
+        {
+            "homeScore": 4,
+            "awayScore": 0,
+            "player": {
+                "name": "Felipe Fritz",
+                "firstName": "",
+                "lastName": "",
+                "slug": "felipe-fritz",
+                "shortName": "F. Fritz",
+                "position": "F",
+                "userCount": 18,
+                "id": 818639
+            },
+            "assist1": {
+                "name": "Diego Urz\u00faa",
+                "slug": "diego-urzua",
+                "shortName": "D. Urz\u00faa",
+                "position": "M",
+                "userCount": 6,
+                "id": 889523
+            },
+            "id": 157846583,
+            "time": 82,
+            "isHome": true,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 9,
+            "incidentType": "goal"
+        },
+        {
+            "playerIn": {
+                "name": "Felipe Fritz",
+                "firstName": "",
+                "lastName": "",
+                "slug": "felipe-fritz",
+                "shortName": "F. Fritz",
+                "position": "F",
+                "userCount": 18,
+                "id": 818639
+            },
+            "playerOut": {
+                "name": "Federico Castro",
+                "firstName": "",
+                "lastName": "",
+                "slug": "castro-federico",
+                "shortName": "F. Castro",
+                "position": "F",
+                "userCount": 20,
+                "id": 790757
+            },
+            "id": 120809787,
+            "time": 74,
+            "isHome": true,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 17,
+            "incidentType": "substitution"
+        },
+        {
+            "playerIn": {
+                "name": "Diego Urz\u00faa",
+                "slug": "diego-urzua",
+                "shortName": "D. Urz\u00faa",
+                "position": "M",
+                "userCount": 6,
+                "id": 889523
+            },
+            "playerOut": {
+                "name": "Mario Sandoval",
+                "slug": "sandoval-mario",
+                "shortName": "M. Sandoval",
+                "position": "M",
+                "userCount": 11,
+                "id": 991004
+            },
+            "id": 120809786,
+            "time": 74,
+            "isHome": true,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 17,
+            "incidentType": "substitution"
+        },
+        {
+            "homeScore": 3,
+            "awayScore": 0,
+            "player": {
+                "name": "Juan C\u00f3rdova",
+                "slug": "juan-cordova",
+                "shortName": "J. C\u00f3rdova",
+                "position": "D",
+                "userCount": 12,
+                "id": 924498
+            },
+            "id": 157846196,
+            "time": 69,
+            "isHome": true,
+            "incidentClass": "ownGoal",
+            "reversedPeriodTime": 22,
+            "incidentType": "goal"
+        },
+        {
+            "playerIn": {
+                "name": "Joaquin Gonzalez",
+                "firstName": "Joaquin Gonzalez",
+                "lastName": "",
+                "slug": "joaquin-gonzalez",
+                "shortName": "J. Gonzalez",
+                "position": "D",
+                "userCount": 3,
+                "id": 1111465
+            },
+            "playerOut": {
+                "name": "Felipe Ort\u00edz",
+                "firstName": "",
+                "lastName": "",
+                "slug": "felipe-ortiz",
+                "shortName": "F. Ort\u00edz",
+                "position": "M",
+                "userCount": 7,
+                "id": 1094961
+            },
+            "id": 120809781,
+            "time": 69,
+            "isHome": true,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 22,
+            "incidentType": "substitution"
+        },
+        {
+            "playerIn": {
+                "name": "Jos\u00e9 Molina",
+                "firstName": "",
+                "lastName": "",
+                "slug": "jose-molina",
+                "shortName": "J. Molina",
+                "position": "M",
+                "userCount": 1,
+                "id": 1017170
+            },
+            "playerOut": {
+                "name": "Claudio Torres",
+                "firstName": "Claudio Torres",
+                "lastName": "",
+                "slug": "claudio-torres",
+                "shortName": "C. Torres",
+                "position": "M",
+                "userCount": 18,
+                "id": 1108549
+            },
+            "id": 120809776,
+            "time": 65,
+            "isHome": false,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 26,
+            "incidentType": "substitution"
+        },
+        {
+            "playerIn": {
+                "name": "Nicol\u00e1s Silva",
+                "slug": "nicolas-silva",
+                "shortName": "N. Silva",
+                "position": "F",
+                "userCount": 2,
+                "id": 977087
+            },
+            "playerOut": {
+                "name": "Antonio Castillo",
+                "slug": "antonio-castillo",
+                "shortName": "A. Castillo",
+                "position": "D",
+                "userCount": 20,
+                "id": 987924
+            },
+            "id": 120809775,
+            "time": 64,
+            "isHome": false,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 27,
+            "incidentType": "substitution"
+        },
+        {
+            "homeScore": 2,
+            "awayScore": 0,
+            "player": {
+                "name": "Diego Coelho",
+                "slug": "diego-coelho",
+                "shortName": "D. Coelho",
+                "position": "F",
+                "userCount": 78,
+                "id": 875274
+            },
+            "assist1": {
+                "name": "Mario Sandoval",
+                "slug": "sandoval-mario",
+                "shortName": "M. Sandoval",
+                "position": "M",
+                "userCount": 11,
+                "id": 991004
+            },
+            "id": 157845980,
+            "time": 62,
+            "isHome": true,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 29,
+            "incidentType": "goal"
+        },
+        {
+            "player": {
+                "name": "Javier Altamirano",
+                "firstName": "",
+                "lastName": "",
+                "slug": "javier-altamirano",
+                "shortName": "J. Altamirano",
+                "position": "M",
+                "userCount": 273,
+                "id": 925337
+            },
+            "playerName": "Javier Altamirano",
+            "reason": "Foul",
+            "rescinded": false,
+            "id": 120161668,
+            "time": 58,
+            "isHome": false,
+            "incidentClass": "yellow",
+            "reversedPeriodTime": 33,
+            "incidentType": "card"
+        },
+        {
+            "playerIn": {
+                "name": "Basti\u00e1n Roco",
+                "slug": "bastian-roco",
+                "shortName": "B. Roco",
+                "position": "D",
+                "userCount": 35,
+                "id": 986446
+            },
+            "playerOut": {
+                "name": "Nicol\u00e1s Ram\u00edrez",
+                "slug": "nicolas-ramirez",
+                "shortName": "N. Ram\u00edrez",
+                "position": "D",
+                "userCount": 49,
+                "id": 831012
+            },
+            "id": 120809754,
+            "time": 46,
+            "isHome": false,
+            "incidentClass": "regular",
+            "reversedPeriodTime": 45,
+            "incidentType": "substitution"
+        },
+        {
+            "text": "HT",
+            "homeScore": 1,
+            "awayScore": 0,
+            "isLive": false,
+            "time": 45,
+            "addedTime": 999,
+            "reversedPeriodTime": 1,
+            "incidentType": "period"
+        },
+        {
+            "length": 1,
+            "time": 45,
+            "addedTime": 0,
+            "reversedPeriodTime": 1,
+            "incidentType": "injuryTime"
+        },
+        {
+            "player": {
+                "name": "Gonzalo Montes",
+                "slug": "gonzalo-montes",
+                "shortName": "G. Montes",
+                "position": "M",
+                "userCount": 128,
+                "id": 925198
+            },
+            "playerName": "Gonzalo Montes",
+            "reason": "Foul",
+            "rescinded": false,
+            "id": 120161652,
+            "time": 19,
+            "isHome": false,
+            "incidentClass": "yellow",
+            "reversedPeriodTime": 27,
+            "incidentType": "card"
+        },
+        {
+            "homeScore": 1,
+            "awayScore": 0,
+            "player": {
+                "name": "Federico Castro",
+                "firstName": "",
+                "lastName": "",
+                "slug": "castro-federico",
+                "shortName": "F. Castro",
+                "position": "F",
+                "userCount": 20,
+                "id": 790757
+            },
+            "id": 157843917,
+            "time": 16,
+            "isHome": true,
+            "incidentClass": "penalty",
+            "reversedPeriodTime": 30,
+            "incidentType": "goal"
+        },
+        {
+            "player": {
+                "name": "Felipe Ort\u00edz",
+                "firstName": "",
+                "lastName": "",
+                "slug": "felipe-ortiz",
+                "shortName": "F. Ort\u00edz",
+                "position": "M",
+                "userCount": 7,
+                "id": 1094961
+            },
+            "playerName": "Felipe Ort\u00edz",
+            "reason": "Foul",
+            "rescinded": false,
+            "id": 120161650,
+            "time": 9,
+            "isHome": true,
+            "incidentClass": "yellow",
+            "reversedPeriodTime": 37,
+            "incidentType": "card"
+        }
+    ]
+}
