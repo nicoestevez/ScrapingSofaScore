@@ -1,43 +1,76 @@
 import requests
 import json
 import csv
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+
+lock = threading.Lock()
 
 url_all = 'https://api.sofascore.com/api/v1/event/{id_partido}/odds/1/all'
 url_statistics = 'https://api.sofascore.com/api/v1/event/{id_partido}/statistics'
 url_incidents = 'https://api.sofascore.com/api/v1/event/{id_partido}/incidents'
-headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+
+
+def get_statistic_by_name(statistics_items, statistic_name, home_key='homeValue', away_key='awayValue', default_value=None):
+    for item in statistics_items:
+        if item.get('name') == statistic_name:
+            return item.get(home_key, default_value), item.get(away_key, default_value)
+    return default_value, default_value
+
+def get_index_of_statistic(statistics_items, statistic_name):
+    for index, item in enumerate(statistics_items):
+        if item.get('groupName') == statistic_name:
+            return index
+    return None
 
 # TODO: Obtener el id de los partidos
 ids = []
 
-with open('ids.txt', 'r') as file:
+with open('./ids/ids_2020.txt', 'r') as file:
     for row in file:
         ids.append(row.strip())
 
-headers_csv = ["team_home", "team_away", "score_home", "score_away", "posession_home", "posession_away", "total_shots_home", 
-               "total_shots_away", "shots_on_target_home", "shots_on_target_away", 
-               "shots_off_target_home", "shots_off_target_away", "blocked_shots_home", 
-               "blocked_shots_away", "corner_kicks_home", "corner_kicks_away", "offsides_home", 
-               "offsides_away", "fouls_home", "fouls_away", "yellow_cards_home", "yellow_cards_away", 
-               "red_cards_home", "red_cards_away", "free_kicks_home", "free_kicks_away", 
-               "throw_ins_home", "throw_ins_away", "goal_kicks_home", "goal_kicks_away", 
-               "shots_inside_box_home", "shots_inside_box_away", "shots_outside_box_home", 
-               "shots_outside_box_away", "goalkeeper_saves_home", "goalkeeper_saves_away", 
-               "passes_home", "passes_away", "accurate_passes_home", "accurate_passes_away", 
-               "long_balls_home", "long_balls_away", "crosses_home", "crosses_away", 
-               "dribbles_home", "dribbles_away", "possesion_lost_home", "possesion_lost_away", 
-               "duels_won_home", "duels_won_away", "aerials_won_home", "aerials_won_away", 
-               "tackles_home", "tackles_away", "interceptions_home", "interceptions_away", 
-               "clearences_home", "clearences_away"]
+headers_csv = ["number_of_match", "team_home", "team_away", "home_score", "away_score",
+               "posession_home", "posession_away", "total_shots_home", "total_shots_away", "shots_on_target_home",
+               "shots_on_target_away", "shots_off_target_home", "shots_off_target_away", "blocked_shots_home",
+               "blocked_shots_away", "corner_kicks_home", "corner_kicks_away", "offsides_home", "offsides_away",
+               "fouls_home", "fouls_away", "yellow_cards_home", "yellow_cards_away", "red_cards_home",
+               "red_cards_away", "free_kicks_home", "free_kicks_away", "throw_ins_home", "throw_ins_away",
+               "goal_kicks_home", "goal_kicks_away", "big_chances_home", "big_chances_away", "big_chances_missed_home",
+               "big_chances_missed_away", "hit_woodwork_home", "hit_woodwork_away", "counter_attacks_home",
+               "counter_attacks_away", "counter_attacks_shots_home", "counter_attacks_shots_away",
+               "shots_inside_box_home", "shots_inside_box_away", "shots_outside_box_home", "shots_outside_box_away",
+               "goalkeeper_saves_home", "goalkeeper_saves_away", "passes_home", "passes_away", "accurate_passes_home",
+               "accurate_passes_away", "long_balls_home", "long_balls_away", "crosses_home", "crosses_away",
+               "dribbles_home", "dribbles_away", "possesion_lost_home", "possesion_lost_away", "duels_won_home",
+               "duels_won_away", "aerials_won_home", "aerials_won_away", "tackles_home", "tackles_away",
+               "interceptions_home", "interceptions_away", "clearences_home", "clearences_away"]
 
 estadisticas = []
 
-with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(headers_csv)
+def get_round_for_match(match_index, starting_round=30, matches_per_round=8):
+    """
+    Returns the round number for a given match index.
 
-    for id in ids:
-    # TODO: Obtener Nombre de los equipos
+    :param match_index: Index of the match (0-based index)
+    :param starting_round: The starting round number (default is 30)
+    :param matches_per_round: Number of matches per round (default is 8)
+    :return: The round number
+    """
+    # Calculate the round number
+    round_number = starting_round - (match_index // matches_per_round)
+    return round_number
+
+def write_to_csv(data, writer):
+    with lock:  # Ensure only one thread writes to the file at a time
+        writer.writerow(data)
+
+def find_data(id, numero_partido):
+    try:
+        print("Partido: " + str(numero_partido))
+        # Obtener Nombre de los equipos
         response_all = requests.get(url_all.format(id_partido=id),
                                     headers=headers)
         if response_all.status_code == 200:
@@ -45,110 +78,99 @@ with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csv
             length = len(all['markets'])
             home_team = all['markets'][length - 1]['choices'][0]['name']
             away_team = all['markets'][length - 1]['choices'][2]['name']
+        else:
+            print(id)
+            home_team = 1
+            away_team = 2
 
-    # TODO: Obtener Goles de los equipos
+        # Obtener Goles de los equipos
         response_incidents = requests.get(url_incidents.format(id_partido=id),
-                                        headers=headers)
+                                            headers=headers)
         if response_incidents.status_code == 200:
             incidents = json.loads(response_incidents.text)
             home_score = incidents['incidents'][0]['homeScore']
             away_score = incidents['incidents'][0]['awayScore']
+        else:
+            print(id)
+            home_score = 999
+            away_score = 999
 
-
-    # TODO: Obtener Estadísticas de los equipos
+        # Obtener Estadísticas de los equipos
         response_statistics = requests.get(url_statistics.format(id_partido=id),
-                                        headers=headers)
+                                            headers=headers)
         if response_statistics.status_code == 200:
             statistics = json.loads(response_statistics.text)
 
-            try:
-                posession_home = statistics['statistics'][0]['groups'][0]['statisticsItems'][0]['homeValue']
-                posession_away = statistics['statistics'][0]['groups'][0]['statisticsItems'][0]['awayValue']
-            except Exception as e:
+            # Expected Goals
+            # if statistics['statistics'][0]['groups'][0]['groupName'] == "Expected":
+
+            #     expected = statistics['statistics'][0]['groups'][0]['statisticsItems']
+            #     expected_goals_home, expected_goals_away = get_statistic_by_name(
+            #         expected, 'Expected goals')
+
+            # else:
+            #     print(id)
+            #     raise Exception("No se encontraron Expected Goals")
+
+            # Posession
+            index_possession = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Possession')
+            if index_possession != None:
+                if statistics['statistics'][0]['groups'][index_possession]['groupName'] == "Possession":
+                    possesion = statistics['statistics'][0]['groups'][index_possession]['statisticsItems']
+
+                    posession_home, posession_away = get_statistic_by_name(
+                        possesion, 'Ball possession')
+            else:
                 posession_home = None
                 posession_away = None
 
-            try:
-                total_shots_home = statistics['statistics'][0]['groups'][1]['statisticsItems'][0]['homeValue']
-                total_shots_away = statistics['statistics'][0]['groups'][1]['statisticsItems'][0]['awayValue']
-            except Exception as e:
+            # Shots
+            index_shots = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Shots')
+            if index_shots != None:
+                if statistics['statistics'][0]['groups'][index_shots]['groupName'] == "Shots":
+                    shots = statistics['statistics'][0]['groups'][index_shots]['statisticsItems']
+
+                    total_shots_home, total_shots_away = get_statistic_by_name(
+                        shots, 'Total shots')
+                    shots_on_target_home, shots_on_target_away = get_statistic_by_name(
+                        shots, 'Shots on target')
+                    shots_off_target_home, shots_off_target_away = get_statistic_by_name(
+                        shots, 'Shots off target')
+                    blocked_shots_home, blocked_shots_away = get_statistic_by_name(
+                        shots, 'Blocked shots')
+            else:
                 total_shots_home = None
                 total_shots_away = None
-
-            try:
-                shots_on_target_home = statistics['statistics'][0]['groups'][1]['statisticsItems'][1]['homeValue']
-                shots_on_target_away = statistics['statistics'][0]['groups'][1]['statisticsItems'][1]['awayValue']
-            except Exception as e:
                 shots_on_target_home = None
                 shots_on_target_away = None
-
-            try:
-                shots_off_target_home = statistics['statistics'][0]['groups'][1]['statisticsItems'][2]['homeValue']
-                shots_off_target_away = statistics['statistics'][0]['groups'][1]['statisticsItems'][2]['awayValue']
-            except Exception as e:
                 shots_off_target_home = None
                 shots_off_target_away = None
-
-            try:
-                blocked_shots_home = statistics['statistics'][0]['groups'][1]['statisticsItems'][3]['homeValue']
-                blocked_shots_away = statistics['statistics'][0]['groups'][1]['statisticsItems'][3]['awayValue']
-            except Exception as e:
                 blocked_shots_home = None
                 blocked_shots_away = None
-
-            try:
-                if len(statistics['statistics'][0]['groups'][2]['statisticsItems']) == 8:
-
-                    corner_kicks_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][0]['homeValue']
-                    corner_kicks_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][0]['awayValue']
-
-                    offsides_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][1]['homeValue']
-                    offsides_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][1]['awayValue']
-
-                    fouls_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][2]['homeValue']
-                    fouls_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][2]['awayValue']
-
-                    yellow_cards_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][3]['homeValue']
-                    yellow_cards_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][3]['awayValue']
-
-                    red_cards_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][4]['homeValue']
-                    red_cards_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][4]['awayValue']
-
-                    free_kicks_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][5]['homeValue']
-                    free_kicks_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][5]['awayValue']
-
-                    throw_ins_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][6]['homeValue']
-                    throw_ins_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][6]['awayValue']
-
-                    goal_kicks_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][7]['homeValue']
-                    goal_kicks_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][7]['awayValue']
                 
-                elif len(statistics['statistics'][0]['groups'][2]['statisticsItems']) == 7:
+            # TVData
+            index_tvdata = get_index_of_statistic(statistics['statistics'][0]['groups'], 'TVData')
+            if index_tvdata != None:
+                if statistics['statistics'][0]['groups'][index_tvdata]['groupName'] == "TVData":
+                    tvdata = statistics['statistics'][0]['groups'][index_tvdata]['statisticsItems']
 
-                    corner_kicks_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][0]['homeValue']
-                    corner_kicks_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][0]['awayValue']
-
-                    offsides_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][1]['homeValue']
-                    offsides_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][1]['awayValue']
-
-                    fouls_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][2]['homeValue']
-                    fouls_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][2]['awayValue']
-
-                    yellow_cards_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][3]['homeValue']
-                    yellow_cards_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][3]['awayValue']
-
-                    red_cards_home = 0
-                    red_cards_away = 0
-
-                    free_kicks_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][4]['homeValue']
-                    free_kicks_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][4]['awayValue']
-
-                    throw_ins_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][5]['homeValue']
-                    throw_ins_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][5]['awayValue']
-
-                    goal_kicks_home = statistics['statistics'][0]['groups'][2]['statisticsItems'][6]['homeValue']
-                    goal_kicks_away = statistics['statistics'][0]['groups'][2]['statisticsItems'][6]['awayValue']
-            except Exception as e:
+                    corner_kicks_home, corner_kicks_away = get_statistic_by_name(
+                        tvdata, 'Corner kicks')
+                    offsides_home, offsides_away = get_statistic_by_name(
+                        tvdata, 'Offsides')
+                    fouls_home, fouls_away = get_statistic_by_name(
+                        tvdata, 'Fouls')
+                    yellow_cards_home, yellow_cards_away = get_statistic_by_name(
+                        tvdata, 'Yellow cards')
+                    red_cards_home, red_cards_away = get_statistic_by_name(
+                        tvdata, 'Red cards', default_value=0)
+                    free_kicks_home, free_kicks_away = get_statistic_by_name(
+                        tvdata, 'Free kicks')
+                    throw_ins_home, throw_ins_away = get_statistic_by_name(
+                        tvdata, 'Throw ins')
+                    goal_kicks_home, goal_kicks_away = get_statistic_by_name(
+                        tvdata, 'Goal kicks')
+            else:
                 corner_kicks_home = None
                 corner_kicks_away = None
                 offsides_home = None
@@ -166,105 +188,121 @@ with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csv
                 goal_kicks_home = None
                 goal_kicks_away = None
 
-            try: 
-                shots_inside_box_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['homeValue']
-                shots_inside_box_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][0]['awayValue']
-            except Exception as e:
+            # Shots extra
+            index_shots_extra = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Shots extra')
+            if index_shots_extra != None:
+                if statistics['statistics'][0]['groups'][index_shots_extra]['groupName'] == "Shots extra":
+                    shots_extra = statistics['statistics'][0]['groups'][index_shots_extra]['statisticsItems']
+
+                    big_chances_home, big_chances_away = get_statistic_by_name(
+                        shots_extra, 'Big chances')
+                    big_chances_missed_home, big_chances_missed_away = get_statistic_by_name(
+                        shots_extra, 'Big chances missed')
+                    hit_woodwork_home, hit_woodwork_away = get_statistic_by_name(
+                        shots_extra, 'Hit woodwork')
+                    counter_attacks_home, counter_attacks_away = get_statistic_by_name(
+                        shots_extra, 'Counter attacks')
+                    counter_attacks_shots_home, counter_attacks_shots_away = get_statistic_by_name(
+                        shots_extra, 'Counter attacks shots')
+                    shots_inside_box_home, shots_inside_box_away = get_statistic_by_name(
+                        shots_extra, 'Shots inside box')
+                    shots_outside_box_home, shots_outside_box_away = get_statistic_by_name(
+                        shots_extra, 'Shots outside box')
+                    goalkeeper_saves_home, goalkeeper_saves_away = get_statistic_by_name(
+                        shots_extra, 'Goalkeeper saves')
+            else:
+                big_chances_home = None
+                big_chances_away = None
+                big_chances_missed_home = None
+                big_chances_missed_away = None
+                hit_woodwork_home = None
+                hit_woodwork_away = None
+                counter_attacks_home = None
+                counter_attacks_away = None
+                counter_attacks_shots_home = None
+                counter_attacks_shots_away = None
                 shots_inside_box_home = None
                 shots_inside_box_away = None
-
-            try:
-                shots_outside_box_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['homeValue']
-                shots_outside_box_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][1]['awayValue']
-            except Exception as e:
                 shots_outside_box_home = None
                 shots_outside_box_away = None
-
-            try:
-                goalkeeper_saves_home = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['homeValue']
-                goalkeeper_saves_away = statistics['statistics'][0]['groups'][3]['statisticsItems'][2]['awayValue']
-            except Exception as e:
                 goalkeeper_saves_home = None
                 goalkeeper_saves_away = None
 
-            try:
-                passes_home = statistics['statistics'][0]['groups'][4]['statisticsItems'][0]['homeValue']
-                passes_away = statistics['statistics'][0]['groups'][4]['statisticsItems'][0]['awayValue']
-            except Exception as e:
+            index_passes = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Passes')
+            if index_passes != None:
+                if statistics['statistics'][0]['groups'][index_passes]['groupName'] == "Passes":
+                    passes = statistics['statistics'][0]['groups'][index_passes]['statisticsItems']
+
+                    passes_home, passes_away = get_statistic_by_name(
+                        passes, 'Passes')
+                    accurate_passes_home, accurate_passes_away = get_statistic_by_name(
+                        passes, 'Accurate passes')
+                    long_balls_home, long_balls_away = get_statistic_by_name(
+                        passes, 'Long balls')
+                    crosses_home, crosses_away = get_statistic_by_name(
+                        passes, 'Crosses')
+            else:
                 passes_home = None
                 passes_away = None
-
-            try:
-                accurate_passes_home = statistics['statistics'][0]['groups'][4]['statisticsItems'][1]['homeValue']
-                accurate_passes_away = statistics['statistics'][0]['groups'][4]['statisticsItems'][1]['awayValue']
-            except Exception as e:
                 accurate_passes_home = None
                 accurate_passes_away = None
-
-            try:
-                long_balls_home = statistics['statistics'][0]['groups'][4]['statisticsItems'][2]['homeTotal']
-                long_balls_away = statistics['statistics'][0]['groups'][4]['statisticsItems'][2]['awayTotal']
-            except Exception as e:
                 long_balls_home = None
                 long_balls_away = None
-
-            try:
-                crosses_home = statistics['statistics'][0]['groups'][4]['statisticsItems'][3]['homeTotal']
-                crosses_away = statistics['statistics'][0]['groups'][4]['statisticsItems'][3]['awayTotal']
-            except Exception as e:
                 crosses_home = None
                 crosses_away = None
 
-            try:
-                dribbles_home = statistics['statistics'][0]['groups'][5]['statisticsItems'][0]['homeTotal']
-                dribbles_away = statistics['statistics'][0]['groups'][5]['statisticsItems'][0]['awayTotal']
-            except Exception as e:
+            # Duels
+            index_duels = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Duels')
+            if index_duels != None:
+                if statistics['statistics'][0]['groups'][index_duels]['groupName'] == "Duels":
+                    duels = statistics['statistics'][0]['groups'][index_duels]['statisticsItems']
+                    
+                    dribbles_home, dribbles_away = get_statistic_by_name(
+                        duels, 'Dribbles')
+                    possesion_lost_home, possesion_lost_away = get_statistic_by_name(
+                        duels, 'Possesion lost')
+                    duels_won_home, duels_won_away = get_statistic_by_name(
+                        duels, 'Duels won')
+                    aerials_won_home, aerials_won_away = get_statistic_by_name(
+                        duels, 'Aerials won')
+            else:
                 dribbles_home = None
                 dribbles_away = None
-
-            try:
-                possesion_lost_home = statistics['statistics'][0]['groups'][5]['statisticsItems'][1]['homeValue']
-                possesion_lost_away = statistics['statistics'][0]['groups'][5]['statisticsItems'][1]['awayValue']
-            except Exception as e:
                 possesion_lost_home = None
                 possesion_lost_away = None
-
-            try:
-                duels_won_home = statistics['statistics'][0]['groups'][5]['statisticsItems'][2]['homeValue']
-                duels_won_away = statistics['statistics'][0]['groups'][5]['statisticsItems'][2]['awayValue']
-            except Exception as e:
                 duels_won_home = None
                 duels_won_away = None
-
-            try:
-                aerials_won_home = statistics['statistics'][0]['groups'][5]['statisticsItems'][3]['homeValue']
-                aerials_won_away = statistics['statistics'][0]['groups'][5]['statisticsItems'][3]['awayValue']
-            except Exception as e:
                 aerials_won_home = None
                 aerials_won_away = None
 
-            try:
-                tackles_home = statistics['statistics'][0]['groups'][6]['statisticsItems'][0]['homeValue']
-                tackles_away = statistics['statistics'][0]['groups'][6]['statisticsItems'][0]['awayValue']
-            except Exception as e:
+            # Defending
+            index_defending = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Defending')
+            if index_defending != None:
+                if statistics['statistics'][0]['groups'][index_defending]['groupName'] == "Defending":
+                    defending = statistics['statistics'][0]['groups'][index_defending]['statisticsItems']
+
+                    tackles_home, tackles_away = get_statistic_by_name(
+                        defending, 'Tackles')
+                    interceptions_home, interceptions_away = get_statistic_by_name(
+                        defending, 'Interceptions')
+                    clearences_home, clearences_away = get_statistic_by_name(
+                        defending, 'Clearences')
+            else:
                 tackles_home = None
                 tackles_away = None
-
-            try:
-                interceptions_home = statistics['statistics'][0]['groups'][6]['statisticsItems'][1]['homeValue']
-                interceptions_away = statistics['statistics'][0]['groups'][6]['statisticsItems'][1]['awayValue']
-            except Exception as e:
                 interceptions_home = None
                 interceptions_away = None
-
-            try:
-                clearences_home = statistics['statistics'][0]['groups'][6]['statisticsItems'][2]['homeValue']
-                clearences_away = statistics['statistics'][0]['groups'][6]['statisticsItems'][2]['awayValue']
-            except Exception as e:
                 clearences_home = None
                 clearences_away = None
-
+        
+        else:
+            print(id)
+            total_elements = 69
+            this_match = [get_round_for_match(numero_partido) if i == 0 else None for i in range(total_elements)]
+            return this_match
+            
         this_match = [
+            numero_partido,
             home_team,
             away_team,
             home_score,
@@ -295,13 +333,24 @@ with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csv
             throw_ins_away,
             goal_kicks_home,
             goal_kicks_away,
+            big_chances_home,
+            big_chances_away,
+            big_chances_missed_home,
+            big_chances_missed_away,
+            hit_woodwork_home,
+            hit_woodwork_away,
+            counter_attacks_home,
+            counter_attacks_away,
+            counter_attacks_shots_home,
+            counter_attacks_shots_away,
             shots_inside_box_home,
             shots_inside_box_away,
             shots_outside_box_home,
             shots_outside_box_away,
             goalkeeper_saves_home,
             goalkeeper_saves_away,
-            passes_home, passes_away,
+            passes_home,
+            passes_away,
             accurate_passes_home,
             accurate_passes_away,
             long_balls_home,
@@ -323,5 +372,30 @@ with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csv
             clearences_home,
             clearences_away
         ]
-        estadisticas.append(this_match)
-        writer.writerow(this_match)
+        return this_match
+    except Exception as e:
+        print(e)
+        raise Exception("Error en el partido: " + str(numero_partido))
+
+# Prepare CSV file for writing
+with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(headers_csv)
+
+    # Use ThreadPoolExecutor to manage multiple threads
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        # Submit all tasks
+        future_to_id = {executor.submit(find_data, id, numero): id for numero, id in enumerate(ids)}
+        
+        try:
+            # Process futures as they complete
+            for future in as_completed(future_to_id):
+                data = future.result()  # This will raise an exception if the task raised one
+                write_to_csv(data, writer)
+        except Exception as exc:
+            print(f"An exception occurred: {exc}")
+            # Here, you can decide whether to cancel remaining tasks or not
+            for future in future_to_id:
+                future.cancel()
+
+print("File writing completed")
