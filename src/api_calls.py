@@ -3,6 +3,8 @@ import json
 import csv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
+import time
+import os
 
 lock = threading.Lock()
 
@@ -13,11 +15,24 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
 
 
+def file_exists(league, season):
+    try:
+        with open(f"statistics/{league['slug']}/stats_{season['year']}.csv", 'r') as file:
+            data = file.read()
+            if data:
+                print(
+                    f"File statistics/{league['slug']}/stats_{season['year']} already exists")
+                return True
+    except:
+        return False
+
+
 def get_statistic_by_name(statistics_items, statistic_name, home_key='homeValue', away_key='awayValue', default_value=None):
     for item in statistics_items:
         if item.get('name') == statistic_name:
             return item.get(home_key, default_value), item.get(away_key, default_value)
     return default_value, default_value
+
 
 def get_index_of_statistic(statistics_items, statistic_name):
     for index, item in enumerate(statistics_items):
@@ -25,12 +40,15 @@ def get_index_of_statistic(statistics_items, statistic_name):
             return index
     return None
 
-# TODO: Obtener el id de los partidos
-ids = []
 
-with open('./ids/ids_2013.txt', 'r') as file:
-    for row in file:
-        ids.append(row.strip())
+def get_season_ids(league, season):
+    ids = []
+
+    with open(f"ids/{league['slug']}/{season['year']}.txt", 'r') as file:
+        for row in file:
+            ids.append(row.strip())
+    return ids
+
 
 headers_csv = ["number_of_match", "team_home", "team_away", "home_score", "away_score",
                "posession_home", "posession_away", "total_shots_home", "total_shots_away", "shots_on_target_home",
@@ -50,6 +68,7 @@ headers_csv = ["number_of_match", "team_home", "team_away", "home_score", "away_
 
 estadisticas = []
 
+
 def get_round_for_match(match_index, starting_round=30, matches_per_round=8):
     """
     Returns the round number for a given match index.
@@ -63,13 +82,13 @@ def get_round_for_match(match_index, starting_round=30, matches_per_round=8):
     round_number = starting_round - (match_index // matches_per_round)
     return round_number
 
+
 def write_to_csv(data, writer):
     with lock:  # Ensure only one thread writes to the file at a time
         writer.writerow(data)
 
+
 def find_data(id, numero_partido):
-    print("Partido: " + str(numero_partido))
-    # Obtener Nombre de los equipos
     try:
         response_all = requests.get(url_all.format(id_partido=id),
                                     headers=headers)
@@ -79,45 +98,32 @@ def find_data(id, numero_partido):
             home_team = all['markets'][length - 1]['choices'][0]['name']
             away_team = all['markets'][length - 1]['choices'][2]['name']
         else:
-            print(id)
             home_team = 1
             away_team = 2
-    except IndexError as e:
-        print(id)
+    except IndexError:
         home_team = 1
         away_team = 2
 
     # Obtener Goles de los equipos
     response_incidents = requests.get(url_incidents.format(id_partido=id),
-                                        headers=headers)
+                                      headers=headers)
     if response_incidents.status_code == 200:
         incidents = json.loads(response_incidents.text)
         home_score = incidents['incidents'][0]['homeScore']
         away_score = incidents['incidents'][0]['awayScore']
     else:
-        print(id)
         home_score = 999
         away_score = 999
 
     # Obtener Estadísticas de los equipos
     response_statistics = requests.get(url_statistics.format(id_partido=id),
-                                        headers=headers)
+                                       headers=headers)
     if response_statistics.status_code == 200:
         statistics = json.loads(response_statistics.text)
 
-        # Expected Goals
-        # if statistics['statistics'][0]['groups'][0]['groupName'] == "Expected":
-
-        #     expected = statistics['statistics'][0]['groups'][0]['statisticsItems']
-        #     expected_goals_home, expected_goals_away = get_statistic_by_name(
-        #         expected, 'Expected goals')
-
-        # else:
-        #     print(id)
-        #     raise Exception("No se encontraron Expected Goals")
-
         # Posession
-        index_possession = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Possession')
+        index_possession = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'Possession')
         if index_possession != None:
             if statistics['statistics'][0]['groups'][index_possession]['groupName'] == "Possession":
                 possesion = statistics['statistics'][0]['groups'][index_possession]['statisticsItems']
@@ -129,7 +135,8 @@ def find_data(id, numero_partido):
             posession_away = None
 
         # Shots
-        index_shots = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Shots')
+        index_shots = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'Shots')
         if index_shots != None:
             if statistics['statistics'][0]['groups'][index_shots]['groupName'] == "Shots":
                 shots = statistics['statistics'][0]['groups'][index_shots]['statisticsItems']
@@ -151,9 +158,10 @@ def find_data(id, numero_partido):
             shots_off_target_away = None
             blocked_shots_home = None
             blocked_shots_away = None
-            
+
         # TVData
-        index_tvdata = get_index_of_statistic(statistics['statistics'][0]['groups'], 'TVData')
+        index_tvdata = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'TVData')
         if index_tvdata != None:
             if statistics['statistics'][0]['groups'][index_tvdata]['groupName'] == "TVData":
                 tvdata = statistics['statistics'][0]['groups'][index_tvdata]['statisticsItems']
@@ -193,7 +201,8 @@ def find_data(id, numero_partido):
             goal_kicks_away = None
 
         # Shots extra
-        index_shots_extra = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Shots extra')
+        index_shots_extra = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'Shots extra')
         if index_shots_extra != None:
             if statistics['statistics'][0]['groups'][index_shots_extra]['groupName'] == "Shots extra":
                 shots_extra = statistics['statistics'][0]['groups'][index_shots_extra]['statisticsItems']
@@ -232,7 +241,8 @@ def find_data(id, numero_partido):
             goalkeeper_saves_home = None
             goalkeeper_saves_away = None
 
-        index_passes = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Passes')
+        index_passes = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'Passes')
         if index_passes != None:
             if statistics['statistics'][0]['groups'][index_passes]['groupName'] == "Passes":
                 passes = statistics['statistics'][0]['groups'][index_passes]['statisticsItems']
@@ -256,11 +266,12 @@ def find_data(id, numero_partido):
             crosses_away = None
 
         # Duels
-        index_duels = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Duels')
+        index_duels = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'Duels')
         if index_duels != None:
             if statistics['statistics'][0]['groups'][index_duels]['groupName'] == "Duels":
                 duels = statistics['statistics'][0]['groups'][index_duels]['statisticsItems']
-                
+
                 dribbles_home, dribbles_away = get_statistic_by_name(
                     duels, 'Dribbles')
                 possesion_lost_home, possesion_lost_away = get_statistic_by_name(
@@ -280,7 +291,8 @@ def find_data(id, numero_partido):
             aerials_won_away = None
 
         # Defending
-        index_defending = get_index_of_statistic(statistics['statistics'][0]['groups'], 'Defending')
+        index_defending = get_index_of_statistic(
+            statistics['statistics'][0]['groups'], 'Defending')
         if index_defending != None:
             if statistics['statistics'][0]['groups'][index_defending]['groupName'] == "Defending":
                 defending = statistics['statistics'][0]['groups'][index_defending]['statisticsItems']
@@ -298,13 +310,13 @@ def find_data(id, numero_partido):
             interceptions_away = None
             clearences_home = None
             clearences_away = None
-    
+
     else:
-        print(id)
         total_elements = 69
-        this_match = [numero_partido if i == 0 else None for i in range(total_elements)]
+        this_match = [numero_partido if i ==
+                      0 else None for i in range(total_elements)]
         return this_match
-        
+
     this_match = [
         numero_partido,
         home_team,
@@ -378,25 +390,52 @@ def find_data(id, numero_partido):
     ]
     return this_match
 
+
+def main():
+    with open('examples_json/league.json', 'r') as file:
+        leagues_data = json.load(file).get('leagues')
+        for league in leagues_data:
+            seasons = league['seasons']
+            for season in seasons:
+                try:
+                    season['year'] = season['year'].replace('/', '-')
+                    get_season_stats(league, season)
+                except FileNotFoundError as e:
+                    continue
+
+
 # Prepare CSV file for writing
-with open('estadisticas_partidos.csv', 'w', newline='', encoding='utf-8') as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(headers_csv)
+def get_season_stats(league, season):
+    if file_exists(league, season):
+        return
 
-    # Use ThreadPoolExecutor to manage multiple threads
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        # Submit all tasks
-        future_to_id = {executor.submit(find_data, id, numero): id for numero, id in enumerate(ids)}
-        
-        try:
-            # Process futures as they complete
-            for future in as_completed(future_to_id):
-                data = future.result()  # This will raise an exception if the task raised one
-                write_to_csv(data, writer)
-        except Exception as exc:
-            print(f"An exception occurred: {exc}")
-            # Here, you can decide whether to cancel remaining tasks or not
-            for future in future_to_id:
-                future.cancel()
+    if str(season['year']) in str(time.localtime().tm_year):
+        return
+    print("Getting stats for:", season['name'], "in", league['name'])
+    ids = get_season_ids(league, season)
+    directory = f"statistics/{league['slug']}"
+    os.makedirs(directory, exist_ok=True)
+    with open(f'statistics/{league["slug"]}/stats_{season["year"]}.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(headers_csv)
 
-print("File writing completed")
+        # Use ThreadPoolExecutor to manage multiple threads
+        with ThreadPoolExecutor(max_workers=64) as executor:
+            # Submit all tasks
+            future_to_id = {executor.submit(
+                find_data, id, numero): id for numero, id in enumerate(ids)}
+
+            try:
+                # Process futures as they complete
+                for future in as_completed(future_to_id):
+                    data = future.result()  # This will raise an exception if the task raised one
+                    write_to_csv(data, writer)
+            except Exception as exc:
+                print(f"An exception occurred: {exc}")
+                # Here, you can decide whether to cancel remaining tasks or not
+                for future in future_to_id:
+                    future.cancel()
+
+
+if __name__ == "__main__":
+    main()

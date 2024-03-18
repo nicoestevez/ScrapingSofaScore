@@ -1,80 +1,89 @@
+import requests
+import json
+import time
 import os
-import csv
-from selenium import webdriver
-from time import sleep
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
+import threading
 
-CANTIDAD_FECHAS = 38
 
-options = Options()
-# options.add_experimental_option("detach", True)
-# options.add_argument("--headless")
+class NoMoreRoundsException(Exception):
+    pass
 
-service = Service(ChromeDriverManager().install())
 
-driver = webdriver.Chrome(service=service, options=options)
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+# Sujeto a cambios
+SELECTOR_BTN = "button[role='combobox']"
+ROUND_SELECTOR = "div[class='sc-fqkvVR sc-fUnMCh dDIma-D hkwHv ps--active-y'] div ul[role='listbox']"
+BACK_BTN_SELECTOR = "button[class='sc-aXZVg bZLkMO']"
+season_url = "https://api.sofascore.com/api/v1/unique-tournament/{league_id}/season/{season_id}/events/round/{round}"
+MAX_ROUNDS = 40
 
-url = "https://www.sofascore.com/tournament/football/chile/primera-division/11653#id:2577"
+BROWSER_PREFS = {'profile.default_content_setting_values': {'images': 2, 'popups': 2,
+                                                            'plugins': 2, 'geolocation': 2,
+                                                            'notifications': 2, 'fullscreen': 2,
+                                                            'mouselock': 2, 'mixed_script': 2, 'media_stream': 2,
+                                                            'media_stream_mic': 2, 'media_stream_camera': 2,
+                                                            'ppapi_broker': 2, 'automatic_downloads': 2, 'midi_sysex': 2,
+                                                            'push_messaging': 2, 'metro_switch_to_desktop': 2,
+                                                            'protected_media_identifier': 2, 'app_banner': 2, 'site_engagement': 2,
+                                                            }}
 
-driver.get(url)
 
-sleep(2)
-try:
-    matches = driver.find_element(By.CSS_SELECTOR, 'h2.sc-jXbUNg.gaxyfA.primary.full-width[data-tabid="matches"]')
-    matches.click()
-except Exception as e:
-    print("No se encontraron los partidos")
-    print(e)
+def get_links_for_season(league, season):
+    season['year'] = season['year'].replace('/', '-')
+    if str(season['year']) in str(time.localtime().tm_year):
+        return
+    if file_exists(league, season):
+        return
+    print("Getting links for:", season['name'])
+    for i in range(1, MAX_ROUNDS + 1):
+        try:
+            find_links(league, season, i)
+        except NoMoreRoundsException:
+            break
 
-sleep(1)
-try:
-    per_rounds = driver.find_element(By.CSS_SELECTOR, 'div.sc-fqkvVR.LYUxR.sc-jXbUNg.edbelf[data-tabid="2"]')
-    per_rounds.click()
-except Exception as e:
-    print("No se encontraron las rondas")
-    print(e)
-sleep(1)
 
-try:
-    anterior = driver.find_element(By.CSS_SELECTOR, 'button.sc-aXZVg.dbpbvb')
+def find_links(league, season, round):
+    league_idx = league["id"]
+    season_idx = season["id"]
+    response_all = requests.get(season_url.format(league_id=league_idx, season_id=season_idx, round=round),
+                                headers=headers)
+    directory = f"ids/{league['slug']}"
+    os.makedirs(directory, exist_ok=True)
+    if response_all.status_code == 200:
+        all = json.loads(response_all.text)
+        events = all["events"]
+        for event in events:
+            id = event["id"]
+            with open(f"ids/{league['slug']}/{season['year']}.txt", 'a') as file:
+                file.write(str(id) + '\n')
+    else:
+        raise NoMoreRoundsException("Error")
 
-    # Open links.txt file for writing
-    with open('links.txt', 'a') as file:
-        for i in range(CANTIDAD_FECHAS):
-            
-            # if i == 0:
-            #     for i in range(5):
-            #         sleep(1)
-            #         anterior.click()
 
-            try:
-                contenedor = driver.find_element(By.CSS_SELECTOR, "div.sc-fqkvVR.fChHZS")
+def file_exists(league, season):
+    try:
+        with open(f"ids/{league['slug']}/{season['year']}.txt", 'r') as file:
+            data = file.read()
+            if data:
+                print(
+                    f"File ids/{league['slug']}/ids_{season['year']} already exists")
+                return True
+    except:
+        return False
 
-                a_elements = contenedor.find_elements(By.TAG_NAME, "a")
-                print(f"Fecha {CANTIDAD_FECHAS - i}: ", len(a_elements))
-                for a_element in a_elements:
 
-                    # Visita el enlace
-                    link = a_element.get_attribute('href')
-                    # print(link)
+def get_links():
+    with open('examples_json/league.json', 'r') as file:
+        leagues_data = json.load(file).get('leagues')
+        threads = []
+        for league in leagues_data:
+            seasons = league['seasons']
+            for season in seasons:
+                thread = threading.Thread(
+                    target=get_links_for_season, args=(league, season))
+                threads.append(thread)
+                thread.start()
 
-                    if link != "https://www.sofascore.com/tournament/football/chile/primera-division/11653":
-                        # Write link to file
-                        file.write(link + '\n')
-
-                sleep(1)
-                anterior.click()
-                sleep(1)
-
-            except Exception as e:
-                print("No se encontraron los elementos")
-                print(e)
-
-except Exception as e:
-    print("No se encontro el botón anterior")
-    print(e)
+        for thread in threads:
+            thread.join()

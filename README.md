@@ -4,6 +4,16 @@ https://api.sofascore.com/api/v1/player/{player-id}/unique-tournament/11653/seas
 https://api.sofascore.com/api/v1/team/{team-id}/players
 https://api.sofascore.com/api/v1/player/{player-id}
 
+## Running the project
+### Getting matches ids
+```python
+python src/main.py --action get-links
+```
+### Getting Matches Statistics
+```python
+python src/main.py --action get-data
+```
+
 ## all
 https://api.sofascore.com/api/v1/event/10961781/odds/1/all
 
