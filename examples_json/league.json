@@ -1,6 +1,64 @@
 {
   "leagues": [
     {
+      "name": "Primera Division",
+      "slug": "primera-division",
+      "id": 11653,
+      "base_url": "https://www.sofascore.com/tournament/football/chile/primera-division/11653",
+      "seasons": [
+        {
+          "name": "Primera Division 2024",
+          "year": "2024",
+          "id": 57883
+        },
+        {
+          "name": "Primera Division 2023",
+          "year": "2023",
+          "id": 48017
+        },
+        {
+          "name": "Primera Division 2022",
+          "year": "2022",
+          "id": 40515
+        },
+        {
+          "name": "Primera Division 2021",
+          "year": "2021",
+          "id": 36048
+        },
+        {
+          "name": "Primera Division 2020",
+          "year": "2020",
+          "id": 26951
+        },
+        {
+          "name": "Primera Division 2019",
+          "year": "2019",
+          "id": 22328
+        },
+        {
+          "name": "Primera Division 2018",
+          "year": "2018",
+          "id": 15995
+        },
+        {
+          "name": "Primera Division 2017",
+          "year": "2017",
+          "id": 13475
+        },
+        {
+          "name": "Primera Division 2013",
+          "year": "2013",
+          "id": 5844
+        },
+        {
+          "name": "Primera Division 2010",
+          "year": "2010",
+          "id": 2577
+        }
+      ]
+    },
+    {
       "name": "Brasileirão Série A",
       "slug": "brasileirao-serie-a",
       "id": 325,
@@ -850,64 +908,6 @@
           "name": "Primera Division 93/94",
           "year": "93/94",
           "id": 25687
-        }
-      ]
-    },
-    {
-      "name": "Primera Division",
-      "slug": "primera-division",
-      "id": 11653,
-      "base_url": "https://www.sofascore.com/tournament/football/chile/primera-division/11653",
-      "seasons": [
-        {
-          "name": "Primera Division 2024",
-          "year": "2024",
-          "id": 57883
-        },
-        {
-          "name": "Primera Division 2023",
-          "year": "2023",
-          "id": 48017
-        },
-        {
-          "name": "Primera Division 2022",
-          "year": "2022",
-          "id": 40515
-        },
-        {
-          "name": "Primera Division 2021",
-          "year": "2021",
-          "id": 36048
-        },
-        {
-          "name": "Primera Division 2020",
-          "year": "2020",
-          "id": 26951
-        },
-        {
-          "name": "Primera Division 2019",
-          "year": "2019",
-          "id": 22328
-        },
-        {
-          "name": "Primera Division 2018",
-          "year": "2018",
-          "id": 15995
-        },
-        {
-          "name": "Primera Division 2017",
-          "year": "2017",
-          "id": 13475
-        },
-        {
-          "name": "Primera Division 2013",
-          "year": "2013",
-          "id": 5844
-        },
-        {
-          "name": "Primera Division 2010",
-          "year": "2010",
-          "id": 2577
         }
       ]
     }

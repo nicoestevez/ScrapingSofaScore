@@ -1,8 +1,5 @@
 # APIs
-
-https://api.sofascore.com/api/v1/player/{player-id}/unique-tournament/11653/season/48017/statistics/overall
-https://api.sofascore.com/api/v1/team/{team-id}/players
-https://api.sofascore.com/api/v1/player/{player-id}
+A top 5 league scraper for Sofascore
 
 ## Running the project
 ### Getting matches ids
@@ -11,17 +8,27 @@ python src/main.py --action get-links
 ```
 ### Getting Matches Statistics
 ```python
-python src/main.py --action get-data
+python src/main.py --action get-stats
+```
+### Getting Matches LINEUPS
+```python
+python src/main.py --action get-lineups
 ```
 
+#### ToDO
+- Scrape more leagues, or have a toggable set of leagues
+
 ## all
-https://api.sofascore.com/api/v1/event/10961781/odds/1/all
+https://api.sofascore.com/api/v1/event/{game-id}/odds/1/all
 
 Home Team = ['markets'][16]['choices'][0]['name']
 Away Team = ['markets'][16]['choices'][2]['name']
 
+## Lineups
+https://api.sofascore.com/api/v1/event/{game-id}/lineups
+
 ## statiscs
-https://api.sofascore.com/api/v1/event/10961781/statistics
+https://api.sofascore.com/api/v1/event/{game-id}/statistics
 
 Expected Goals Home = ['statistics'][0]['groups'][0]['statisticsItems'][0]['homeValue']
 Expected Goals Away = ['statistics'][0]['groups'][0]['statisticsItems'][0]['awayValue']

@@ -5,26 +5,16 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 import time
 import os
+from helpers import file_exists, get_season_ids
 
 lock = threading.Lock()
 
+FOLDER = 'statistics'
 url_all = 'https://api.sofascore.com/api/v1/event/{id_partido}/odds/1/all'
 url_statistics = 'https://api.sofascore.com/api/v1/event/{id_partido}/statistics'
 url_incidents = 'https://api.sofascore.com/api/v1/event/{id_partido}/incidents'
 headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
-
-
-def file_exists(league, season):
-    try:
-        with open(f"statistics/{league['slug']}/stats_{season['year']}.csv", 'r') as file:
-            data = file.read()
-            if data:
-                print(
-                    f"File statistics/{league['slug']}/stats_{season['year']} already exists")
-                return True
-    except:
-        return False
 
 
 def get_statistic_by_name(statistics_items, statistic_name, home_key='homeValue', away_key='awayValue', default_value=None):
@@ -39,15 +29,6 @@ def get_index_of_statistic(statistics_items, statistic_name):
         if item.get('groupName') == statistic_name:
             return index
     return None
-
-
-def get_season_ids(league, season):
-    ids = []
-
-    with open(f"ids/{league['slug']}/{season['year']}.txt", 'r') as file:
-        for row in file:
-            ids.append(row.strip())
-    return ids
 
 
 headers_csv = ["number_of_match", "team_home", "team_away", "home_score", "away_score",
@@ -406,16 +387,16 @@ def main():
 
 # Prepare CSV file for writing
 def get_season_stats(league, season):
-    if file_exists(league, season):
+    if file_exists(league, season, FOLDER):
         return
 
     if str(season['year']) in str(time.localtime().tm_year):
         return
     print("Getting stats for:", season['name'], "in", league['name'])
     ids = get_season_ids(league, season)
-    directory = f"statistics/{league['slug']}"
+    directory = f"{FOLDER}/{league['slug']}"
     os.makedirs(directory, exist_ok=True)
-    with open(f'statistics/{league["slug"]}/stats_{season["year"]}.csv', 'w', newline='', encoding='utf-8') as csvfile:
+    with open(f'{FOLDER}/{league["slug"]}/stats_{season["year"]}.csv', 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(headers_csv)
 
