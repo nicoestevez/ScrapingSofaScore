@@ -230,18 +230,18 @@ def restartStats():
 
 
 if __name__ == '__main__':
-    competition_id = 11653
-    season_id = 13475
-    year = 2017
+    competition_id = 17
+    season_id = 41886
+    year = "2022-23"
 
     # Abre un archivo CSV para escribir. Asegúrate de especificar el modo newline=''
-    with open(f'stats/stats_{year}.csv', mode='w', newline='') as file:
+    with open(f'stats/stats_{year}_premier.csv', mode='w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=stats_keys)
 
         # Escribe los encabezados de columna
         writer.writeheader()
 
-        for round in range(1, 16):
+        for round in range(1, 39):
             print(f"Round {round}")
             events = getRoundData(competition_id, season_id, round)
             for event in events:
