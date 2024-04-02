@@ -97,7 +97,7 @@ def concat_or_create(df, data):
 
 
 def get_season_stats(league, season):
-    if file_exists(league, season, FOLDER):
+    if file_exists(league, season, FOLDER, 'lineups'):
         return
 
     if str(season['year']) in str(time.localtime().tm_year):
