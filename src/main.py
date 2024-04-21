@@ -1,13 +1,15 @@
 import requests
 import csv
 
-headers = {'User-Agent': 'Mozilla/5.0'}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
 
 competition_id = 11653
 season_id = 48017
 
 round_api = "https://api.sofascore.com/api/v1/unique-tournament/{competition_id}/season/{season_id}/events/round/{round}"
 statistics_api = "https://api.sofascore.com/api/v1/event/{match_id}/statistics"
+incidents_api = 'https://api.sofascore.com/api/v1/event/{id_partido}/incidents'
 
 stats_keys = [
     "round", "team_home", "team_away", "score_home", "score_away",
@@ -35,12 +37,14 @@ def getRoundData(competition_id, season_id, round):
     return events
 
 
-def getMatchScore(event):
-    global stats
+def getMatchScore(event, match_id):
+    incidents = requests.get(incidents_api.format(
+        id_partido=match_id), headers=headers).json()
+    incidents = incidents.get('incidents', [])[0]
     stats["team_home"] = event.get('homeTeam').get('name', None)
-    stats["score_home"] = event.get('homeScore').get('current', None)
+    stats["score_home"] = incidents.get('homeScore', None)
     stats["team_away"] = event.get('awayTeam').get('name', None)
-    stats["score_away"] = event.get('awayScore').get('current', None)
+    stats["score_away"] = incidents.get('awayScore', None)
 
 
 def getMatchId(event):
@@ -231,11 +235,11 @@ def restartStats():
 
 if __name__ == '__main__':
     competition_id = 17
-    season_id = 41886
-    year = "2022-23"
+    season_id = 52186
+    year = "2023-24"
 
     # Abre un archivo CSV para escribir. Asegúrate de especificar el modo newline=''
-    with open(f'stats/stats_{year}_premier.csv', mode='w', newline='') as file:
+    with open(f'premier/stats_{year}.csv', mode='w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=stats_keys)
 
         # Escribe los encabezados de columna
@@ -249,8 +253,8 @@ if __name__ == '__main__':
                 stats["round"] = round
                 status = event.get('status', {}).get('code', 0)
                 if status == 100:
-                    getMatchScore(event)
                     match_id = getMatchId(event)
+                    getMatchScore(event, match_id)
                     getMatchStatistics(match_id)
 
                     # Escribe la fila actual en el archivo CSV
