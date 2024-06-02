@@ -16,6 +16,23 @@ url_incidents = 'https://api.sofascore.com/api/v1/event/{id_partido}/incidents'
 headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
 
+HOME_CHOICE = 0
+DRAW_CHOICE = 1
+AWAY_CHOICE = 2
+
+
+def get_initial_odd(all_data):
+    try:
+        home = all_data['markets'][0]['choices'][HOME_CHOICE]['initialFractionalValue']
+        num_home, den_home = map(int, home.split('/'))
+        draw = all_data['markets'][0]['choices'][DRAW_CHOICE]['initialFractionalValue']
+        num_draw, den_draw = map(int, draw.split('/'))
+        away = all_data['markets'][0]['choices'][AWAY_CHOICE]['initialFractionalValue']
+        num_away, den_away = map(int, away.split('/'))
+        return num_home/den_home, num_draw/den_draw, num_away/den_away
+    except IndexError:
+        return 0, 0, 0
+
 
 def get_statistic_by_name(statistics_items, statistic_name, home_key='homeValue', away_key='awayValue', default_value=None):
     for item in statistics_items:
@@ -45,9 +62,7 @@ headers_csv = ["number_of_match", "team_home", "team_away", "home_score", "away_
                "accurate_passes_away", "long_balls_home", "long_balls_away", "crosses_home", "crosses_away",
                "dribbles_home", "dribbles_away", "possesion_lost_home", "possesion_lost_away", "duels_won_home",
                "duels_won_away", "aerials_won_home", "aerials_won_away", "tackles_home", "tackles_away",
-               "interceptions_home", "interceptions_away", "clearences_home", "clearences_away"]
-
-estadisticas = []
+               "interceptions_home", "interceptions_away", "clearences_home", "clearences_away", "home_odd", "draw_odd", "away_odd"]
 
 
 def get_round_for_match(match_index, starting_round=30, matches_per_round=8):
@@ -78,12 +93,15 @@ def find_data(id, numero_partido):
             length = len(all['markets'])
             home_team = all['markets'][length - 1]['choices'][0]['name']
             away_team = all['markets'][length - 1]['choices'][2]['name']
+            home_odd, draw_odd, away_odd = get_initial_odd(all)
         else:
             home_team = 1
             away_team = 2
+            home_odd, draw_odd, away_odd = 0, 0, 0
     except IndexError:
         home_team = 1
         away_team = 2
+        home_odd, draw_odd, away_odd = 0, 0, 0
 
     # Obtener Goles de los equipos
     response_incidents = requests.get(url_incidents.format(id_partido=id),
@@ -367,7 +385,10 @@ def find_data(id, numero_partido):
         interceptions_home,
         interceptions_away,
         clearences_home,
-        clearences_away
+        clearences_away,
+        home_odd,
+        draw_odd,
+        away_odd
     ]
     return this_match
 
